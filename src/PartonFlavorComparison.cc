@@ -213,9 +213,9 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
       double jetEta = iJet->eta();
       double jetPhi = iJet->phi();
 
-      hJetPt->Fill(jetPt);
-      hJetEta->Fill(jetEta);
       hJetPhi->Fill(jetPhi);
+      hJetEta->Fill(jetEta);
+      hJetPt->Fill(jetPt);
 
       hPartonFlavorOld_Phi->Fill( jetPhi, partonFlavourToChar(oldPartonFlavor), 1 );
       hPartonFlavorNew_Phi->Fill( jetPhi, partonFlavourToChar(newPartonFlavor), 1 );
@@ -247,6 +247,12 @@ PartonFlavorComparison::beginJob()
 
   hPartonFlavorOld_Pt = fs->make<TH2D>("hPartonFlavorOld_Pt", "Parton Flavor vs. Pt",500,0,500,7,0,7);
   hPartonFlavorNew_Pt = fs->make<TH2D>("hPartonFlavorNew_Pt", "Parton Flavor vs. Pt",500,0,500,7,0,7);
+
+  hJetPhi = fs->make<TH1D>("hJetPhi","Jet Phi",150,0,3.141593);
+  hJetEta = fs->make<TH1D>("hJetEta","Jet Eta",600,-6,6);
+  hJetPt = fs->make<TH1D>("hJetPt", "Jet pT",500,0,500);
+
+
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
