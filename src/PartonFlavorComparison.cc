@@ -54,6 +54,11 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "fastjet/JetDefinition.hh"
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/Selector.hh"
+#include "fastjet/PseudoJet.hh"
+
 //GenParticleCollection
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 
@@ -92,8 +97,8 @@ class PartonFlavorComparison : public edm::EDAnalyzer {
 
       // ----------member data ---------------------------
       edm::Service<TFileService> fs;
-      edm::InputTag particles_,jets_,flavorByDR_,flavorByClustering_;
-      edm::Handle< reco::GenParticleCollection > particles;
+      edm::InputTag bHadrons_,cHadrons_,partons_,leptons_,jets_,flavorByDR_,flavorByClustering_;
+      edm::Handle< reco::GenParticleRefVector > bHadrons,cHadrons,partons,leptons;
       edm::Handle< edm::View< reco::Jet > > jets;
       edm::Handle< reco::JetMatchedPartonsCollection > flavorByDR;
       edm::Handle< reco::JetFlavourInfoMatchingCollection > flavorByClustering;
@@ -109,10 +114,30 @@ class PartonFlavorComparison : public edm::EDAnalyzer {
       TH2D* hPartonFlavorOld_Pt;
       TH2D* hPartonFlavorNew_Pt;
 
-
       TH1D* hJetPt;
       TH1D* hJetEta;
       TH1D* hJetPhi;
+
+      TH1D* hHardestBJetPt;
+      TH1D* hHardestBJetEta;
+      TH1D* hHardestBJetPhi;
+      TH1D* hSecondHardestBJetPt;
+      TH1D* hSecondHardestBJetEta;
+      TH1D* hSecondHardestBJetPhi;
+
+      TH1D* hSoftJetsEta;
+      TH1D* hSoftJetsPhi;
+
+      TH2D* hJetPt_BHadronPt_HighPt;
+      TH2D* hJetPt_BHadronPt_LowPt;
+
+      TH1D* hNumBHadrons;
+      TH1D* hNumCHadrons;
+      TH1D* hNumPartons;
+      TH1D* hNumLeptons;
+
+      ofstream events;
+
 };
 
 //
@@ -130,10 +155,15 @@ PartonFlavorComparison::PartonFlavorComparison(const edm::ParameterSet& iConfig)
 
 {
    //now do what ever initialization is needed
-  particles_ = iConfig.getParameter<InputTag>("particleSource");
+  bHadrons_ = iConfig.getParameter<InputTag>("bHadrons");
+  cHadrons_ = iConfig.getParameter<InputTag>("cHadrons");
+  partons_ = iConfig.getParameter<InputTag>("partons");
+  leptons_ = iConfig.getParameter<InputTag>("leptons");
   jets_ = iConfig.getParameter<InputTag>("jets");
   flavorByDR_ = iConfig.getParameter<InputTag>("jetFlavourByRef");
   flavorByClustering_ = iConfig.getParameter<InputTag>("jetFlavourInfos");
+
+  //events.open("events.txt");
 
 }
 
@@ -143,6 +173,7 @@ PartonFlavorComparison::~PartonFlavorComparison()
  
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
+  //events.close();
 
 }
 
@@ -191,10 +222,85 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
     ss << run << ":" << lumi << ":" << event;
     string eventAddress = ss.str();
 
-    iEvent.getByLabel(particles_,particles);
+    iEvent.getByLabel(bHadrons_,bHadrons);
+    iEvent.getByLabel(cHadrons_,cHadrons);
+    iEvent.getByLabel(partons_,partons);
+    iEvent.getByLabel(leptons_,leptons);
     iEvent.getByLabel(jets_, jets);
     iEvent.getByLabel(flavorByDR_,flavorByDR);
     iEvent.getByLabel(flavorByClustering_, flavorByClustering );
+
+    //fill histograms with the number of ghost b hadrons, c hadrons, partons, and leptons in each event
+    hNumBHadrons->Fill( bHadrons->size() );
+    hNumCHadrons->Fill( cHadrons->size() );
+    hNumPartons->Fill( partons->size() );
+    hNumLeptons->Fill( leptons->size() );
+
+    //find the two hardest b hadrons
+    reco::GenParticleRef hardestBHadron;
+    reco::GenParticleRef secondHardestBHadron;
+    double hardestBPt = -1.;
+    double secondHardestBPt = -1.;
+    for (reco::GenParticleRefVector::const_iterator iHadron = bHadrons->begin(); iHadron != bHadrons->end(); ++iHadron){
+      double pt = (*iHadron)->pt();
+      if ( pt > hardestBPt ){
+        hardestBHadron = (*iHadron);
+        hardestBPt = pt;
+      }
+      else if ( (pt < hardestBPt) && (pt > secondHardestBPt) ){
+        secondHardestBHadron = (*iHadron);
+        secondHardestBPt = pt;
+      }
+
+    }//end loop over genparticles
+
+    //find two hardest b jets
+    reco::Jet* hardestBJet = NULL;
+    reco::Jet* secondHardestBJet = NULL;
+    reco::GenParticleRefVector hardestBJetBHadrons;
+    reco::GenParticleRefVector secondHardestBJetBHadrons;
+    double hardestBJetPt = -1.;
+    double secondHardestBJetPt = -1.;
+    for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
+      const reco::Jet* iJet  = (*iMatch).first.get();
+      int newPartonFlavor = abs((*iMatch).second.getPartonFlavour());
+      if (newPartonFlavor != 5) continue;
+      double jetPt = iJet->pt();
+      if ( jetPt > hardestBJetPt ){
+        hardestBJet = const_cast<reco::Jet*>(iJet);
+        hardestBJetBHadrons = (*iMatch).second.getbHadrons();
+        hardestBJetPt = jetPt;
+      }
+      else if ( (jetPt < hardestBJetPt) && (jetPt > secondHardestBJetPt) ){
+        secondHardestBJet = const_cast<reco::Jet*>(iJet);
+        secondHardestBJetBHadrons = (*iMatch).second.getbHadrons();
+        secondHardestBJetPt = jetPt;
+      }
+    
+    }//end loop over jet matches to get two hardest b jets
+    //plots including just two hardest b jets
+    if (!hardestBJet){
+      cout << "no b jets!" << endl;
+      return; //just move on to the next event
+    }
+    if (!secondHardestBJet){
+      // events << eventAddress << "\n";
+      // cout << "only one b jet!" << endl;
+      // cout << eventAddress << endl;
+    }
+    hHardestBJetPhi->Fill( hardestBJet->phi() );
+    hHardestBJetEta->Fill( hardestBJet->eta() );
+    hHardestBJetPt->Fill( hardestBJetPt );
+    if(secondHardestBJet){
+      hSecondHardestBJetPhi->Fill( secondHardestBJet->phi() );
+      hSecondHardestBJetEta->Fill( secondHardestBJet->eta() );
+      hSecondHardestBJetPt->Fill( secondHardestBJetPt );
+    }
+    //compare jet pT to bhadron pT
+    //if(hardestBJetBHadrons.size() == 0 || secondHardestBJetBHadrons.size() == 0) throw cms::Exception("b jet issue") << "one of the two b jets don't have clustered b hadrons!!!";
+    hJetPt_BHadronPt_HighPt->Fill(hardestBJetBHadrons.at(0)->pt(),hardestBJetPt);
+    if(secondHardestBJet)
+      hJetPt_BHadronPt_HighPt->Fill(secondHardestBJetBHadrons.at(0)->pt(),secondHardestBJetPt);
 
     for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
       
@@ -207,7 +313,8 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
       int oldPartonFlavor = 0;
       const reco::GenParticleRef partonRef = (*flavorByDR)[currentIndex].second.algoDefinitionParton();
       if ( partonRef.isNonnull() ) oldPartonFlavor = partonRef.get()->pdgId();
-      int newPartonFlavor = (*iMatch).second.getPartonFlavour();
+      int newPartonFlavor = abs((*iMatch).second.getPartonFlavour());
+      // if (newPartonFlavor != 5) continue;
 
       double jetPt = iJet->pt();
       double jetEta = iJet->eta();
@@ -216,6 +323,16 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
       hJetPhi->Fill(jetPhi);
       hJetEta->Fill(jetEta);
       hJetPt->Fill(jetPt);
+
+      if(jetPt < 30 && newPartonFlavor == 5){
+        hSoftJetsPhi->Fill(jetPhi);
+        hSoftJetsEta->Fill(jetEta);
+        hJetPt_BHadronPt_LowPt->Fill((*iMatch).second.getbHadrons().at(0)->pt(),jetPt);
+      }
+
+      //if ( jetPt < 20 || fabs(jetEta)>2.5 ) continue;
+
+      hPartonFlavorNew->Fill( partonFlavourToChar(newPartonFlavor), 1 );
 
       hPartonFlavorOld_Phi->Fill( jetPhi, partonFlavourToChar(oldPartonFlavor), 1 );
       hPartonFlavorNew_Phi->Fill( jetPhi, partonFlavourToChar(newPartonFlavor), 1 );
@@ -227,8 +344,7 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
       hPartonFlavorNew_Pt->Fill( jetPt, partonFlavourToChar(newPartonFlavor), 1 );
 
 
-    }
-
+    } //end loop over new jet matches
 
 
 }
@@ -239,8 +355,8 @@ void
 PartonFlavorComparison::beginJob()
 {
 
-  hPartonFlavorOld_Phi = fs->make<TH2D>("hPartonFlavorOld_Phi", "Parton Flavor vs. Phi",150,0,3.141593,7,0,7);
-  hPartonFlavorNew_Phi = fs->make<TH2D>("hPartonFlavorNew_Phi", "Parton Flavor vs. Phi",150,0,3.141593,7,0,7);
+  hPartonFlavorOld_Phi = fs->make<TH2D>("hPartonFlavorOld_Phi", "Parton Flavor vs. Phi",300,-3.15,3.15,7,0,7);
+  hPartonFlavorNew_Phi = fs->make<TH2D>("hPartonFlavorNew_Phi", "Parton Flavor vs. Phi",300,-3.15,3.15,7,0,7);
 
   hPartonFlavorOld_Eta = fs->make<TH2D>("hPartonFlavorOld_Eta", "Parton Flavor vs. Eta",600,-6,6,7,0,7);
   hPartonFlavorNew_Eta = fs->make<TH2D>("hPartonFlavorNew_Eta", "Parton Flavor vs. Eta",600,-6,6,7,0,7);
@@ -248,9 +364,30 @@ PartonFlavorComparison::beginJob()
   hPartonFlavorOld_Pt = fs->make<TH2D>("hPartonFlavorOld_Pt", "Parton Flavor vs. Pt",500,0,500,7,0,7);
   hPartonFlavorNew_Pt = fs->make<TH2D>("hPartonFlavorNew_Pt", "Parton Flavor vs. Pt",500,0,500,7,0,7);
 
-  hJetPhi = fs->make<TH1D>("hJetPhi","Jet Phi",150,0,3.141593);
-  hJetEta = fs->make<TH1D>("hJetEta","Jet Eta",600,-6,6);
-  hJetPt = fs->make<TH1D>("hJetPt", "Jet pT",500,0,500);
+  hJetPhi = fs->make<TH1D>("hJetPhi","All B Jet Phi",300,-3.15,3.15);
+  hJetEta = fs->make<TH1D>("hJetEta","All B Jet Eta",600,-6,6);
+  hJetPt = fs->make<TH1D>("hJetPt", "All B Jet pT",500,0,500);
+
+  hHardestBJetPhi = fs->make<TH1D>("hHardJetsPhi","Phi of Hardest B Jet",300,-3.15,3.15);
+  hHardestBJetEta = fs->make<TH1D>("hHardJetsEta","Eta of Hardest B Jet",600,-6,6);
+  hHardestBJetPt = fs->make<TH1D>("hHardJetsPt", "pT of Hardest B Jet",500,0,500);
+
+  hSecondHardestBJetPhi = fs->make<TH1D>("hSecondHardestBJetPhi","Phi of Second Hardest B Jet",300,-3.15,3.15);
+  hSecondHardestBJetEta = fs->make<TH1D>("hSecondHardestBJetEta","Eta of Second Hardest B Jet",600,-6,6);
+  hSecondHardestBJetPt = fs->make<TH1D>("hSecondHardestBJetPt", "pT of Second Hardest B Jet",500,0,500);
+
+  hSoftJetsPhi = fs->make<TH1D>("hSoftJetsPhi","Phi of Jets with pT < 30 GeV",300,-3.15,3.15);
+  hSoftJetsEta = fs->make<TH1D>("hSoftJetsEta","Eta of Jets with pT < 30 GeV",600,-6,6);
+
+  hJetPt_BHadronPt_HighPt = fs->make<TH2D>("hJetPt_BHadronPt_HighPt", "Jet pT vs. B Hadron pT (high pT jets)",500,0,500,500,0,500);
+  hJetPt_BHadronPt_LowPt = fs->make<TH2D>("hJetPt_BHadronPt_LowPt", "Jet pT vs. B Hadron pT (low pT jets)",500,0,500,500,0,500);
+
+  hNumBHadrons = fs->make<TH1D>("hNumBHadrons","Number of b Hadrons Clustered",5,-0.5,4.5);
+  hNumCHadrons = fs->make<TH1D>("hNumCHadrons","Number of c Hadrons Clustered",5,-0.5,4.5);
+  hNumPartons = fs->make<TH1D>("hNumPartons","Number of Partons Clustered",21,-0.5,20.5);
+  hNumLeptons = fs->make<TH1D>("hNumLeptons","Number of Leptons Clustered",5,-0.5,4.5);
+
+  hPartonFlavorNew = fs->make<TH1D>("hPartonFlavorNew","Jet Parton Flavor Profile",7,0,7);
 
 
 }
@@ -259,8 +396,13 @@ PartonFlavorComparison::beginJob()
 void 
 PartonFlavorComparison::endJob()
 {
-  hPartonFlavorOld = hPartonFlavorOld_Pt->ProjectionY();
-  hPartonFlavorNew = hPartonFlavorNew_Pt->ProjectionY();
+  hPartonFlavorNew->LabelsOption("a","X");
+  hPartonFlavorNew_Pt->LabelsOption("a","Y");
+  hPartonFlavorOld_Pt->LabelsOption("a","Y");
+  hPartonFlavorNew_Eta->LabelsOption("a","Y");
+  hPartonFlavorOld_Eta->LabelsOption("a","Y");
+  hPartonFlavorNew_Phi->LabelsOption("a","Y");
+  hPartonFlavorOld_Phi->LabelsOption("a","Y");
 
 }
 

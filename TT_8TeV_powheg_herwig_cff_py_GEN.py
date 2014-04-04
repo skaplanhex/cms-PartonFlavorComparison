@@ -28,7 +28,7 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-       'file:/afs/cern.ch/user/s/skaplan/work/public/JetFlavorStudies/CMSSW_5_3_11/src/tt_7118lhehead.root'
+       'file:tt_herwig6_lhe2edm.root'
     ),
 )
 
@@ -49,7 +49,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     outputCommands = process.RAWSIMEventContent.outputCommands,
-    fileName = cms.untracked.string('TT_8TeV_powheg_herwig_cff_py_GEN_7118lhe1_herwigstatus.root'),
+    fileName = cms.untracked.string('tt_herwig6_pythiastatus_events.root'),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('GEN')
@@ -88,7 +88,7 @@ process.generator = cms.EDFilter("Herwig6HadronizerFilter",
     herwigHepMCVerbosity = cms.untracked.bool(False),
     filterEfficiency = cms.untracked.double(1.0),
     herwigVerbosity = cms.untracked.int32(0),
-    emulatePythiaStatusCodes = cms.untracked.bool(False),
+    emulatePythiaStatusCodes = cms.untracked.bool(True),
     comEnergy = cms.double(8000.0),
     lhapdfSetPath = cms.untracked.string(''),
     printCards = cms.untracked.bool(False),

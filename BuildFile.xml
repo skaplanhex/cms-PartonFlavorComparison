@@ -8,5 +8,18 @@
 <use name="SimDataFormats/JetMatching"/>
 <use name="DataFormats/HepMCCandidate"/>
 <use name="CommonTools/UtilAlgos"/>
+<use   name="root"/> 
+<use   name="rootrflx"/>
+<use   name="rootcore"/>
+<use   name="JetMETCorrections/Algorithms"/>
+<use   name="RecoJets/JetAlgorithms"/>
+<use   name="DataFormats/VertexReco"/>
+<use   name="DataFormats/PatCandidates"/>
+<use   name="DataFormats/HLTReco"/>
+<use   name="PhysicsTools/UtilAlgos"/>
+<use   name="FWCore/ServiceRegistry"/>
+<use   name="HLTrigger/HLTcore"/>
+<use   name="CondFormats/DataRecord"/>
+
 <flags EDM_PLUGIN="1"/>
 <flags CXXFLAGS="-O0 -g -fno-inline"/>
