@@ -382,10 +382,10 @@ PartonFlavorComparison::beginJob()
   hJetPt_BHadronPt_HighPt = fs->make<TH2D>("hJetPt_BHadronPt_HighPt", "Jet pT vs. B Hadron pT (high pT jets)",500,0,500,500,0,500);
   hJetPt_BHadronPt_LowPt = fs->make<TH2D>("hJetPt_BHadronPt_LowPt", "Jet pT vs. B Hadron pT (low pT jets)",500,0,500,500,0,500);
 
-  hNumBHadrons = fs->make<TH1D>("hNumBHadrons","Number of b Hadrons Clustered",5,-0.5,4.5);
-  hNumCHadrons = fs->make<TH1D>("hNumCHadrons","Number of c Hadrons Clustered",5,-0.5,4.5);
-  hNumPartons = fs->make<TH1D>("hNumPartons","Number of Partons Clustered",21,-0.5,20.5);
-  hNumLeptons = fs->make<TH1D>("hNumLeptons","Number of Leptons Clustered",5,-0.5,4.5);
+  hNumBHadrons = fs->make<TH1D>("hNumBHadrons","Number of b Hadrons Clustered",11,-0.5,10.5);
+  hNumCHadrons = fs->make<TH1D>("hNumCHadrons","Number of c Hadrons Clustered",16,-0.5,15.5);
+  hNumPartons = fs->make<TH1D>("hNumPartons","Number of Partons Clustered",501,-0.5,500);
+  hNumLeptons = fs->make<TH1D>("hNumLeptons","Number of Leptons Clustered",16,-0.5,15.5);
 
   hPartonFlavorNew = fs->make<TH1D>("hPartonFlavorNew","Jet Parton Flavor Profile",7,0,7);
 

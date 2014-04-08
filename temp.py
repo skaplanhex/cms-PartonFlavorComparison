@@ -2,85 +2,176 @@ from ROOT import *
 #gROOT.SetStyle("Plain")
 #SetBatch() makes it so the picture isn't displayed on the screen when saved; this saves lots of time!
 gROOT.SetBatch()
-gStyle.SetOptStat(11)
+gStyle.SetOptStat(0)
 c = TCanvas()
 c.SetBorderMode(0)
 c.SetFillColor(kWhite)
-genDict = {'tt_pythia6_plots.root':'pythia6','tt_pythia8_plots.root':'pythia8','tt_sherpa_plots.root':'sherpa','tt_mg_plots.root':'mg','tt_herwig6_pythiastatus_plots.root':'herwig6_pythiastatus','tt_herwig6_herwigstatus_plots.root':'herwig6_herwigstatus'}
-binLabelDict = {1:'b',2:'c',3:'d',4:'g',5:"noMatch",6:'s',7:'u'}
-numGenDict = {0:'pythia6',1:'pythia8',2:'sherpa',3:'mg',4:'herwig6_pythiastatus',5:'herwig6_herwigstatus'}
-
-bHistos = []
-cHistos = []
-sHistos = []
-noMatchHistos = []
-uHistos = []
-dHistos = []
-gHistos = []
-lightHistos = [] #lightHisto = u+d+s+g
-flavorHistos = []
-
-bHistosOld = []
-cHistosOld = []
-sHistosOld = []
-noMatchHistosOld = []
-uHistosOld = []
-dHistosOld = []
-gHistosOld = []
-lightHistosOld = [] #lightHisto = u+d+s+g
-flavorHistosOld = []
-
 c = TCanvas()
+l1 = TLatex()
+l1.SetTextAlign(12);
+l1.SetTextSize(0.045);
+l1.SetNDC();
+filep6 = TFile("pythia6plots.root","READ")
+filep8 = TFile("pythia8plots.root","READ")
+fileh6 = TFile("herwig6plots.root","READ")
+
+fileDict = {1:"Pythia6",2:"Pythia8",3:"Herwig6"}
+genDict = {1:"Pythia 6",2:"Pythia 8",3:"Herwig 6"}
+
 counter = 0
-for filename in ('oldplotrootfiles/tt_pythia8_plots.root','tt_pythia8_status71_plots_nocuts.root'):
+#see fileDict for relation between counter and hadronizer
+for filename in (filep6,filep8,fileh6):
 	counter += 1
-	f = TFile(filename,"READ")
+	numBHadrons = filename.Get("analyzerAK5/hNumBHadrons")
+	numBHadronsKeep = filename.Get("analyzerAK5Keep/hNumBHadrons")
+	numBHadronsPlusKeepPlus = filename.Get("analyzerAK5PlusKeepPlus/hNumBHadrons")
+	numBHadronsPlusKeepPlusPlus = filename.Get("analyzerAK5PlusKeepPlusPlus/hNumBHadrons")
 
-	histptold = f.Get('analyzerAK5/hPartonFlavorOld_Pt')
-	histptnew = f.Get('analyzerAK5/hPartonFlavorNew_Pt')
+	numCHadrons = filename.Get("analyzerAK5/hNumCHadrons")
+	numCHadronsKeep = filename.Get("analyzerAK5Keep/hNumCHadrons")
+	numCHadronsPlusKeepPlus = filename.Get("analyzerAK5PlusKeepPlus/hNumCHadrons")
+	numCHadronsPlusKeepPlusPlus = filename.Get("analyzerAK5PlusKeepPlusPlus/hNumCHadrons")
 
-	histptold.LabelsOption('a','Y')
-	histptnew.LabelsOption('a','Y')
+	numPartons = filename.Get("analyzerAK5/hNumPartons")
+	numPartonsKeep = filename.Get("analyzerAK5Keep/hNumPartons")
+	numPartonsPlusKeepPlus = filename.Get("analyzerAK5PlusKeepPlus/hNumPartons")
+	numPartonsPlusKeepPlusPlus = filename.Get("analyzerAK5PlusKeepPlusPlus/hNumPartons")
 
-	flavHistNew = histptnew.ProjectionY()
-	flavHistNew.LabelsOption('a','X') #may not be needed, but I guess it doesn't hurt
-	flavHistNew.SetDirectory(0) #don't go out of scope!
-	if (counter == 1):
-		flavHistNew.SetName("pythia8_oldstatusdef_flavordist")
-	elif (counter == 2):
-		flavHistNew.SetName("pythia8_status71_flavordist")
-	flavHistNew.GetYaxis().SetRangeUser(0,125000)
-	flavorHistos.append(flavHistNew)
+	numLeptons = filename.Get("analyzerAK5/hNumLeptons")
+	numLeptonsKeep = filename.Get("analyzerAK5Keep/hNumLeptons")
+	numLeptonsPlusKeepPlus = filename.Get("analyzerAK5PlusKeepPlus/hNumLeptons")
+	numLeptonsPlusKeepPlusPlus = filename.Get("analyzerAK5PlusKeepPlusPlus/hNumLeptons")
 
-	flavHistOld = histptold.ProjectionY()
-	flavHistOld.LabelsOption('a','X') #may not be needed, but I guess it doesn't hurt
-	flavHistOld.SetDirectory(0)
-	flavHistOld.GetYaxis().SetRangeUser(0,125000)
-	flavorHistosOld.append(flavHistOld)
+	partonFlavorNew = filename.Get("analyzerAK5/hPartonFlavorNew")
+	partonFlavorNewKeep = filename.Get("analyzerAK5Keep/hPartonFlavorNew")
+	partonFlavorNewPlusKeepPlus = filename.Get("analyzerAK5PlusKeepPlus/hPartonFlavorNew")
+	partonFlavorNewPlusKeepPlusPlus = filename.Get("analyzerAK5PlusKeepPlusPlus/hPartonFlavorNew")
 
+	#change line colors and styles
+	histCounter = 0
+	for hist in (numBHadrons,numCHadrons,numPartons,numLeptons,partonFlavorNew):
+		histCounter += 1
+		hist.SetTitle("") #should never see title in any comparison plot
+		hist.SetLineColor(kBlack)
+		hist.SetLineWidth(2)
+		hist.GetXaxis().SetTitleSize(0.045)
+		hist.GetYaxis().SetTitleSize(0.045)
+		hist.GetXaxis().SetTitleFont(42)
+		hist.GetYaxis().SetTitleFont(42)
+		hist.GetYaxis().SetTitle("Number of Events")
+		#hist.GetYaxis().SetTitleOffset(1.2)
+		if (histCounter != 3):
+			numBins = hist.GetNbinsX()
+			hist.GetXaxis().SetNdivisions(numBins)
 
-#pythia 8 old status convention
-flavorHistos[0].SetLineColor(kBlack)
-flavorHistos[0].SetMarkerColor(kBlack)
-flavorHistos[0].SetMarkerStyle(20)
+	for hist in (numBHadronsKeep,numCHadronsKeep,numPartonsKeep,numLeptonsKeep,partonFlavorNewKeep):
+		hist.SetLineColor(kBlue)
+		hist.SetLineStyle(3)
+		hist.SetLineWidth(2)
 
-#pythia 8 status==71
-flavorHistos[1].SetLineColor(kBlue)
-flavorHistos[1].SetMarkerColor(kBlue)
-flavorHistos[1].SetMarkerStyle(21)
+	for hist in (numBHadronsPlusKeepPlus,numCHadronsPlusKeepPlus,numPartonsPlusKeepPlus,numLeptonsPlusKeepPlus,partonFlavorNewPlusKeepPlus):
+		hist.SetLineColor(kMagenta)
+		hist.SetLineStyle(6)
+		hist.SetLineWidth(2)
 
-flavorHistos[0].SetTitle("Jet Parton Flavor")
-flavorHistos[0].GetXaxis().SetTitle("Jet Flavor")
-flavorHistos[0].GetYaxis().SetTitle("Number Of Jets / Flavor")
-flavorHistos[0].GetYaxis().SetTitleOffset(1.4)
-flavorHistos[0].Draw()
-flavorHistos[0].Draw("sameP0")
-flavorHistos[1].Draw("same")
-flavorHistos[1].Draw("sameP0")
-legend = TLegend(0.66,0.5,0.99,0.78)
-legend.AddEntry(flavorHistos[0],"Pythia 8 (status==43,44,51,52,62)","LP")
-legend.AddEntry(flavorHistos[1],"Pythia 8 (status == 71)","LP")
-legend.SetTextSize(0.027)
-legend.Draw()
-c.SaveAs("flavdist_pythia8comparison_nocuts.png")
-c.Clear()
+	for hist in (numBHadronsPlusKeepPlusPlus,numCHadronsPlusKeepPlusPlus,numPartonsPlusKeepPlusPlus,numLeptonsPlusKeepPlusPlus,partonFlavorNewPlusKeepPlusPlus):
+		hist.SetLineColor(kRed)
+		hist.SetLineStyle(8)
+		hist.SetLineWidth(2)
+
+	numBHadrons.GetXaxis().SetTitle("B Hadron Multiplicity")
+	numBHadrons.Draw()
+	l1.SetTextSize(0.045);
+	l1.DrawLatex(0.14,0.92, "CMS Simulation Preliminary      #sqrt{s} = 8 TeV")
+	numBHadronsKeep.Draw("same")
+	numBHadronsPlusKeepPlus.Draw("same")
+	numBHadronsPlusKeepPlusPlus.Draw("same")
+	legend = TLegend(0.57,0.5,0.90,0.78)
+	legend.SetHeader(genDict[counter]+" t#kern[-1.0]{#bar{t}}")
+	legend.AddEntry(numBHadrons,"All GenParticles","L")
+	legend.AddEntry(numBHadronsKeep,"Pruned GenParticles (keep)","L")
+	legend.AddEntry(numBHadronsPlusKeepPlus,"Pruned GenParticles (+keep+)","L")
+	legend.AddEntry(numBHadronsPlusKeepPlusPlus,"Pruned GenParticles (+keep++)","L")
+	legend.SetBorderSize(0)
+	legend.SetFillColor(kWhite)
+	legend.Draw()
+	c.SaveAs(fileDict[counter]+"bhadronnumber.png")
+	c.Clear()
+
+	numCHadrons.GetXaxis().SetTitle("C Hadron Multiplicity")
+	numCHadrons.Draw()
+	l1.SetTextSize(0.045);
+	l1.DrawLatex(0.14,0.92, "CMS Simulation Preliminary      #sqrt{s} = 8 TeV")
+	l1.SetTextSize(0.040);
+	numCHadronsKeep.Draw("same")
+	numCHadronsPlusKeepPlus.Draw("same")
+	numCHadronsPlusKeepPlusPlus.Draw("same")
+	legend = TLegend(0.57,0.5,0.90,0.78)
+	legend.SetHeader(genDict[counter]+" t#kern[-1.0]{#bar{t}}")
+	legend.AddEntry(numCHadrons,"All GenParticles","L")
+	legend.AddEntry(numCHadronsKeep,"Pruned GenParticles (keep)","L")
+	legend.AddEntry(numCHadronsPlusKeepPlus,"Pruned GenParticles (+keep+)","L")
+	legend.AddEntry(numCHadronsPlusKeepPlusPlus,"Pruned GenParticles (+keep++)","L")
+	legend.SetBorderSize(0)
+	legend.SetFillColor(kWhite)
+	legend.Draw()
+	c.SaveAs(fileDict[counter]+"chadronnumber.png")
+	c.Clear()
+
+	numPartons.GetXaxis().SetTitle("Parton Multiplicity")
+	numPartons.Draw()
+	l1.SetTextSize(0.045);
+	l1.DrawLatex(0.14,0.92, "CMS Simulation Preliminary      #sqrt{s} = 8 TeV")
+	numPartonsKeep.Draw("same")
+	numPartonsPlusKeepPlus.Draw("same")
+	numPartonsPlusKeepPlusPlus.Draw("same")
+	legend = TLegend(0.57,0.5,0.90,0.78)
+	legend.SetHeader(genDict[counter]+" t#kern[-1.0]{#bar{t}}")
+	legend.AddEntry(numPartons,"All GenParticles","L")
+	legend.AddEntry(numPartonsKeep,"Pruned GenParticles (keep)","L")
+	legend.AddEntry(numPartonsPlusKeepPlus,"Pruned GenParticles (+keep+)","L")
+	legend.AddEntry(numPartonsPlusKeepPlusPlus,"Pruned GenParticles (+keep++)","L")
+	legend.SetBorderSize(0)
+	legend.SetFillColor(kWhite)
+	legend.Draw()
+	c.SaveAs(fileDict[counter]+"partonnumber.png")
+	c.Clear()
+
+	numLeptons.GetXaxis().SetTitle("Lepton Multiplicity")
+	numLeptons.Draw()
+	l1.SetTextSize(0.045);
+	l1.DrawLatex(0.14,0.92, "CMS Simulation Preliminary      #sqrt{s} = 8 TeV")
+	numLeptonsKeep.Draw("same")
+	numLeptonsPlusKeepPlus.Draw("same")
+	numLeptonsPlusKeepPlusPlus.Draw("same")
+	legend = TLegend(0.57,0.5,0.90,0.78)
+	legend.SetHeader(genDict[counter]+" t#kern[-1.0]{#bar{t}}")
+	legend.AddEntry(numLeptons,"All GenParticles","L")
+	legend.AddEntry(numLeptonsKeep,"Pruned GenParticles (keep)","L")
+	legend.AddEntry(numLeptonsPlusKeepPlus,"Pruned GenParticles (+keep+)","L")
+	legend.AddEntry(numLeptonsPlusKeepPlusPlus,"Pruned GenParticles (+keep++)","L")
+	legend.SetBorderSize(0)
+	legend.SetFillColor(kWhite)
+	legend.Draw()
+	c.SaveAs(fileDict[counter]+"leptonnumber.png")
+	c.Clear()
+
+	partonFlavorNew.GetXaxis().SetTitle("Jet Parton Flavor")
+	partonFlavorNew.GetYaxis().SetTitle("Number of Jets / Flavor")
+	partonFlavorNew.Draw()
+	l1.SetTextSize(0.045);
+	l1.DrawLatex(0.14,0.92, "CMS Simulation Preliminary      #sqrt{s} = 8 TeV")
+	partonFlavorNewKeep.Draw("same")
+	partonFlavorNewPlusKeepPlus.Draw("same")
+	partonFlavorNewPlusKeepPlusPlus.Draw("same")
+	legend = TLegend(0.57,0.5,0.90,0.78)
+	legend.SetHeader(genDict[counter]+" t#kern[-1.0]{#bar{t}}")
+	legend.AddEntry(partonFlavorNew,"All GenParticles","L")
+	legend.AddEntry(partonFlavorNewKeep,"Pruned GenParticles (keep)","L")
+	legend.AddEntry(partonFlavorNewPlusKeepPlus,"Pruned GenParticles (+keep+)","L")
+	legend.AddEntry(partonFlavorNewPlusKeepPlusPlus,"Pruned GenParticles (+keep++)","L")
+	legend.SetBorderSize(0)
+	legend.SetFillColor(kWhite)
+	legend.Draw()
+	c.SaveAs(fileDict[counter]+"jetflavor.png")
+	c.Clear()

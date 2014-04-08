@@ -32,8 +32,8 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
       # 'file:tt_herwig6_herwigstatus_events.root',
       # 'file:tt_herwig6_pythiastatus_events.root',
-       'file:tt_pythia6_events.root',
-      # 'file:tt_pythia8_events.root'
+       # 'file:tt_pythia6_events.root',
+      'file:tt_pythia8_events.root'
        #  '/store/mc/Summer12_DR53X/TTJets_SemiLeptMGDecays_8TeV-madgraph/AODSIM/PU_S10_START53_V7A_ext-v1/00000/00188A34-1224-E211-833B-003048D4612C.root',
        # '/store/mc/Summer12_DR53X/TTJets_SemiLeptMGDecays_8TeV-madgraph/AODSIM/PU_S10_START53_V7A_ext-v1/00000/0031649A-1324-E211-AEB0-0025B3E06484.root',
        # '/store/mc/Summer12_DR53X/TTJets_SemiLeptMGDecays_8TeV-madgraph/AODSIM/PU_S10_START53_V7A_ext-v1/00000/00328E09-9724-E211-824C-003048D4610A.root',
@@ -47,30 +47,30 @@ process.prunedGenParticlesForJetFlavorKeep = cms.EDProducer('GenParticlePruner',
     src = cms.InputTag("genParticles"),
     select = cms.vstring(
     "drop  *  ", #by default
-    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || abs(pdgId) = 4 || abs(pdgId) = 5 || pdgId = 21) & (status = 2 || status = 11 || status = 71)",
+    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || abs(pdgId) = 4 || abs(pdgId) = 5 || pdgId = 21) & (status = 2 || status = 11 || status = 71 || status = 72)",
     "keep (abs(pdgId) = 11 || abs(pdgId)= 13) & status = 1",
     "keep abs(pdgId)= 15 & status = 2",
     "keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
     )
 )
-process.prunedGenParticlesForJetFlavorPlusKeep = cms.EDProducer('GenParticlePruner',
+process.prunedGenParticlesForJetFlavorPlusKeepPlus = cms.EDProducer('GenParticlePruner',
     src = cms.InputTag("genParticles"),
     select = cms.vstring(
     "drop  *  ", #by default
-    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || abs(pdgId) = 4 || abs(pdgId) = 5 || pdgId = 21) & (status = 2 || status = 11 || status = 71)",
+    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || abs(pdgId) = 4 || abs(pdgId) = 5 || pdgId = 21) & (status = 2 || status = 11 || status = 71|| status = 72)",
     "keep (abs(pdgId) = 11 || abs(pdgId)= 13) & status = 1",
     "keep abs(pdgId)= 15 & status = 2",
-    "+keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
+    "+keep+ (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
     )
 )
-process.prunedGenParticlesForJetFlavorPlusPlusKeep = cms.EDProducer('GenParticlePruner',
+process.prunedGenParticlesForJetFlavorPlusKeepPlusPlus = cms.EDProducer('GenParticlePruner',
     src = cms.InputTag("genParticles"),
     select = cms.vstring(
     "drop  *  ", #by default
-    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || abs(pdgId) = 4 || abs(pdgId) = 5 || pdgId = 21) & (status = 2 || status = 11 || status = 71)",
+    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || abs(pdgId) = 4 || abs(pdgId) = 5 || pdgId = 21) & (status = 2 || status = 11 || status = 71|| status = 72)",
     "keep (abs(pdgId) = 11 || abs(pdgId)= 13) & status = 1",
     "keep abs(pdgId)= 15 & status = 2",
-    "++keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
+    "+keep++ (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
     )
 )
 process.myPartons = cms.EDProducer("PartonSelector",
@@ -87,14 +87,14 @@ process.selectedHadronsAndPartonsKeep = cms.EDProducer('HadronAndPartonSelector'
            particles = cms.InputTag("prunedGenParticlesForJetFlavorKeep"),
            partonMode = cms.string("Auto")
 )
-process.selectedHadronsAndPartonsPlusKeep = cms.EDProducer('HadronAndPartonSelector',
+process.selectedHadronsAndPartonsPlusKeepPlus = cms.EDProducer('HadronAndPartonSelector',
            src = cms.InputTag("generator"),
-           particles = cms.InputTag("prunedGenParticlesForJetFlavorPlusKeep"),
+           particles = cms.InputTag("prunedGenParticlesForJetFlavorPlusKeepPlus"),
            partonMode = cms.string("Auto")
 )
-process.selectedHadronsAndPartonsPlusPlusKeep = cms.EDProducer('HadronAndPartonSelector',
+process.selectedHadronsAndPartonsPlusKeepPlusPlus = cms.EDProducer('HadronAndPartonSelector',
            src = cms.InputTag("generator"),
-           particles = cms.InputTag("prunedGenParticlesForJetFlavorPlusPlusKeep"),
+           particles = cms.InputTag("prunedGenParticlesForJetFlavorPlusKeepPlusPlus"),
            partonMode = cms.string("Auto")
 )
 from RecoJets.Configuration.GenJetParticles_cff import genParticlesForJets
@@ -129,23 +129,23 @@ process.jetFlavourInfosAK5Keep = cms.EDProducer("JetFlavourClustering",
       ghostRescaling           = cms.double(1e-18),
       hadronFlavourHasPriority = cms.bool(True)
 )
-process.jetFlavourInfosAK5PlusKeep = cms.EDProducer("JetFlavourClustering",
+process.jetFlavourInfosAK5PlusKeepPlus = cms.EDProducer("JetFlavourClustering",
       jets                     = cms.InputTag("ak5GenJets"),
-      bHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusKeep","bHadrons"),
-      cHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusKeep","cHadrons"),
-      partons                  = cms.InputTag("selectedHadronsAndPartonsPlusKeep","partons"),
-      leptons                  = cms.InputTag("selectedHadronsAndPartonsPlusKeep","leptons"),
+      bHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","bHadrons"),
+      cHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","cHadrons"),
+      partons                  = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","partons"),
+      leptons                  = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","leptons"),
       jetAlgorithm             = cms.string("AntiKt"),
       rParam                   = cms.double(0.5),
       ghostRescaling           = cms.double(1e-18),
       hadronFlavourHasPriority = cms.bool(True)
 )
-process.jetFlavourInfosAK5PlusPlusKeep = cms.EDProducer("JetFlavourClustering",
+process.jetFlavourInfosAK5PlusKeepPlusPlus = cms.EDProducer("JetFlavourClustering",
       jets                     = cms.InputTag("ak5GenJets"),
-      bHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","bHadrons"),
-      cHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","cHadrons"),
-      partons                  = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","partons"),
-      leptons                  = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","leptons"),
+      bHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","bHadrons"),
+      cHadrons                 = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","cHadrons"),
+      partons                  = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","partons"),
+      leptons                  = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","leptons"),
       jetAlgorithm             = cms.string("AntiKt"),
       rParam                   = cms.double(0.5),
       ghostRescaling           = cms.double(1e-18),
@@ -172,32 +172,37 @@ process.analyzerAK5Keep = cms.EDAnalyzer('PartonFlavorComparison',
          jetFlavourByRef = cms.InputTag("flavourByRefAK5"),
          jetFlavourInfos = cms.InputTag("jetFlavourInfosAK5Keep")
 )
-process.analyzerAK5PlusKeep = cms.EDAnalyzer('PartonFlavorComparison',
-         bHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusKeep","bHadrons"),
-         cHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusKeep","cHadrons"),
-         partons         = cms.InputTag("selectedHadronsAndPartonsPlusKeep","partons"),
-         leptons         = cms.InputTag("selectedHadronsAndPartonsPlusKeep","leptons"),
+process.analyzerAK5PlusKeepPlus = cms.EDAnalyzer('PartonFlavorComparison',
+         bHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","bHadrons"),
+         cHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","cHadrons"),
+         partons         = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","partons"),
+         leptons         = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlus","leptons"),
          jets            = cms.InputTag("ak5GenJets"),
          jetFlavourByRef = cms.InputTag("flavourByRefAK5"),
-         jetFlavourInfos = cms.InputTag("jetFlavourInfosAK5PlusKeep")
+         jetFlavourInfos = cms.InputTag("jetFlavourInfosAK5PlusKeepPlus")
 )
-process.analyzerAK5PlusPlusKeep = cms.EDAnalyzer('PartonFlavorComparison',
-         bHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","bHadrons"),
-         cHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","cHadrons"),
-         partons         = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","partons"),
-         leptons         = cms.InputTag("selectedHadronsAndPartonsPlusPlusKeep","leptons"),
+process.analyzerAK5PlusKeepPlusPlus = cms.EDAnalyzer('PartonFlavorComparison',
+         bHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","bHadrons"),
+         cHadrons        = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","cHadrons"),
+         partons         = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","partons"),
+         leptons         = cms.InputTag("selectedHadronsAndPartonsPlusKeepPlusPlus","leptons"),
          jets            = cms.InputTag("ak5GenJets"),
          jetFlavourByRef = cms.InputTag("flavourByRefAK5"),
-         jetFlavourInfos = cms.InputTag("jetFlavourInfosAK5PlusPlusKeep")
+         jetFlavourInfos = cms.InputTag("jetFlavourInfosAK5PlusKeepPlusPlus")
 )
+# process.out = cms.OutputModule("PoolOutputModule",
+#       fileName = cms.untracked.string("tt_herwig6_events_prunedGenParticles.root")
+# )
 
 
 process.p = cms.Path( 
-  (process.myPartons+process.prunedGenParticlesForJetFlavorKeep+process.prunedGenParticlesForJetFlavorPlusKeep+process.prunedGenParticlesForJetFlavorPlusPlusKeep)
-  *(process.selectedHadronsAndPartons+process.selectedHadronsAndPartonsKeep+process.selectedHadronsAndPartonsPlusKeep+process.selectedHadronsAndPartonsPlusPlusKeep)
-  *(process.flavourByRefAK5+process.jetFlavourInfosAK5+process.jetFlavourInfosAK5Keep+process.jetFlavourInfosAK5PlusKeep+process.jetFlavourInfosAK5PlusPlusKeep)
-  *(process.analyzerAK5+process.analyzerAK5Keep+process.analyzerAK5PlusKeep+process.analyzerAK5PlusPlusKeep)
+  (process.myPartons+process.prunedGenParticlesForJetFlavorKeep+process.prunedGenParticlesForJetFlavorPlusKeepPlus+process.prunedGenParticlesForJetFlavorPlusKeepPlusPlus)
+  *(process.selectedHadronsAndPartons+process.selectedHadronsAndPartonsKeep+process.selectedHadronsAndPartonsPlusKeepPlus+process.selectedHadronsAndPartonsPlusKeepPlusPlus)
+  *(process.flavourByRefAK5+process.jetFlavourInfosAK5+process.jetFlavourInfosAK5Keep+process.jetFlavourInfosAK5PlusKeepPlus+process.jetFlavourInfosAK5PlusKeepPlusPlus)
+  *(process.analyzerAK5+process.analyzerAK5Keep+process.analyzerAK5PlusKeepPlus+process.analyzerAK5PlusKeepPlusPlus)
 )
+# process.ep = cms.EndPath(process.out)
+# process.schedule = cms.Schedule(process.p,process.ep)
 
 # process.p = cms.Path((process.myPartons+process.selectedHadronsAndPartons)
 #   *process.genParticlesForJets*process.ak5GenJets
