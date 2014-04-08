@@ -136,6 +136,9 @@ class PartonFlavorComparison : public edm::EDAnalyzer {
       TH1D* hNumPartons;
       TH1D* hNumLeptons;
 
+      TH2D* hJetPt_LightQuarkPt;
+      TH2D* hJetPt_GluonPt;
+
       ofstream events;
 
 };
@@ -264,6 +267,10 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
     for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
       const reco::Jet* iJet  = (*iMatch).first.get();
       int newPartonFlavor = abs((*iMatch).second.getPartonFlavour());
+      if (newPartonFlavor == 1 || newPartonFlavor == 2 || newPartonFlavor == 3)
+        hJetPt_LightQuarkPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
+      else if (newPartonFlavor == 21)
+        hJetPt_GluonPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
       if (newPartonFlavor != 5) continue;
       double jetPt = iJet->pt();
       if ( jetPt > hardestBJetPt ){
@@ -277,7 +284,7 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
         secondHardestBJetPt = jetPt;
       }
     
-    }//end loop over jet matches to get two hardest b jets
+    }//end loop over jet matches to get two hardest b jets and to fill histograms for jet pt/parton pt comparison
     //plots including just two hardest b jets
     if (!hardestBJet){
       cout << "no b jets!" << endl;
@@ -330,7 +337,7 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
         hJetPt_BHadronPt_LowPt->Fill((*iMatch).second.getbHadrons().at(0)->pt(),jetPt);
       }
 
-      //if ( jetPt < 20 || fabs(jetEta)>2.5 ) continue;
+      if ( jetPt < 20 ) continue;
 
       hPartonFlavorNew->Fill( partonFlavourToChar(newPartonFlavor), 1 );
 
@@ -388,6 +395,9 @@ PartonFlavorComparison::beginJob()
   hNumLeptons = fs->make<TH1D>("hNumLeptons","Number of Leptons Clustered",16,-0.5,15.5);
 
   hPartonFlavorNew = fs->make<TH1D>("hPartonFlavorNew","Jet Parton Flavor Profile",7,0,7);
+
+  hJetPt_LightQuarkPt = fs->make<TH2D>("hJetPt_LightQuarkPt", "Jet pT vs. Light Quark pT",500,0,500,500,0,500);
+  hJetPt_GluonPt = fs->make<TH2D>("hJetPt_GluonPt", "Jet pT vs. Gluon pT",500,0,500,500,0,500);
 
 
 }
