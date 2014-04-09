@@ -44,19 +44,53 @@ process.source = cms.Source("PoolSource",
        # 'root://xrootd.unl.edu//store/mc/Summer12_DR53X/TTJets_SemiLeptDecays_8TeV-sherpa/AODSIM/PU_S10_START53_V19-v1/20000/00F4E9AC-CFB6-E211-8FA0-00266CF9B254.root',
     )
 )
-process.prunedGenParticles = cms.EDProducer('GenParticlePruner',
+process.prunedGenParticlesPt0 = cms.EDProducer('GenParticlePruner',
     src = cms.InputTag("genParticles"),
     select = cms.vstring(
     "drop  *  ", #by default
-    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || abs(pdgId) = 4 || abs(pdgId) = 5 || pdgId = 21) & (status = 2 || status = 11 || status = 71 || status = 72)",
+    "keep (abs(pdgId) = 4 || abs(pdgId) = 5) & (status = 2 || status = 11 || status = 71 || status = 72)",
+    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || pdgId = 21) & (status = 2 || status = 11 || status = 71 || status = 72)",
     "keep (abs(pdgId) = 11 || abs(pdgId)= 13) & status = 1",
     "keep abs(pdgId)= 15 & status = 2",
-    "++keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
+    "keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
+    )
+)
+process.prunedGenParticlesPt5 = cms.EDProducer('GenParticlePruner',
+    src = cms.InputTag("genParticles"),
+    select = cms.vstring(
+    "drop  *  ", #by default
+    "keep (abs(pdgId) = 4 || abs(pdgId) = 5) & (status = 2 || status = 11 || status = 71 || status = 72)",
+    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || pdgId = 21) & (status = 2 || status = 11 || status = 71 || status = 72) & (pt>5)",
+    "keep (abs(pdgId) = 11 || abs(pdgId)= 13) & status = 1",
+    "keep abs(pdgId)= 15 & status = 2",
+    "keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
+    )
+)
+process.prunedGenParticlesPt10 = cms.EDProducer('GenParticlePruner',
+    src = cms.InputTag("genParticles"),
+    select = cms.vstring(
+    "drop  *  ", #by default
+    "keep (abs(pdgId) = 4 || abs(pdgId) = 5) & (status = 2 || status = 11 || status = 71 || status = 72)",
+    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || pdgId = 21) & (status = 2 || status = 11 || status = 71 || status = 72) & (pt>10)",
+    "keep (abs(pdgId) = 11 || abs(pdgId)= 13) & status = 1",
+    "keep abs(pdgId)= 15 & status = 2",
+    "keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
+    )
+)
+process.prunedGenParticlesPt15 = cms.EDProducer('GenParticlePruner',
+    src = cms.InputTag("genParticles"),
+    select = cms.vstring(
+    "drop  *  ", #by default
+    "keep (abs(pdgId) = 4 || abs(pdgId) = 5) & (status = 2 || status = 11 || status = 71 || status = 72)",
+    "keep (abs(pdgId) = 1 || abs(pdgId) = 2 || abs(pdgId) = 3 || pdgId = 21) & (status = 2 || status = 11 || status = 71 || status = 72) & (pt>15)",
+    "keep (abs(pdgId) = 11 || abs(pdgId)= 13) & status = 1",
+    "keep abs(pdgId)= 15 & status = 2",
+    "keep (400 < abs(pdgId) && abs(pdgId) < 600) || (4000 < abs(pdgId) && abs(pdgId) < 6000)",
     )
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
       fileName = cms.untracked.string(options.outfilename)
 )
-process.p = cms.Path(process.prunedGenParticles)
+process.p = cms.Path(process.prunedGenParticlesPt0+process.prunedGenParticlesPt5+process.prunedGenParticlesPt10+process.prunedGenParticlesPt15)
 process.ep = cms.EndPath(process.out)
