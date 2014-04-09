@@ -98,7 +98,7 @@ for filename in (filep6,filep8,fileh6):
 	c.SaveAs(fileDict[counter]+"bhadronnumber.png")
 	c.Clear()
 
-	numCHadrons.GetXaxis().SetTitle("C Hadron Multiplicity")
+	numCHadrons.GetXaxis().SetTitle("Charm Hadron Multiplicity")
 	numCHadrons.Draw()
 	l1.SetTextSize(0.045);
 	l1.DrawLatex(0.14,0.92, "CMS Simulation Preliminary      #sqrt{s} = 8 TeV")
@@ -175,3 +175,72 @@ for filename in (filep6,filep8,fileh6):
 	legend.Draw()
 	c.SaveAs(fileDict[counter]+"jetflavor.png")
 	c.Clear()
+
+filep6pt = TFile("pythia6_ptcomparison_plots.root","READ")
+filep8pt = TFile("pythia8_ptcomparison_plots.root","READ")
+fileh6pt = TFile("herwig6_ptcomparison_plots.root","READ")
+
+counter = 0
+for filename in (filep6pt,filep8pt,fileh6pt):
+	counter += 1
+
+	flavpt0 = filename.Get("analyzerAK5Pt0/hPartonFlavorNew")
+	flavpt5 = filename.Get("analyzerAK5Pt5/hPartonFlavorNew")
+	flavpt10 = filename.Get("analyzerAK5Pt10/hPartonFlavorNew")
+	flavpt15 = filename.Get("analyzerAK5Pt15/hPartonFlavorNew")
+
+	flavpt0.SetTitle("") #should never see title in any comparison plot
+	flavpt0.SetLineColor(kBlack)
+	flavpt0.SetLineWidth(2)
+	flavpt0.GetXaxis().SetTitleSize(0.045)
+	flavpt0.GetYaxis().SetTitleSize(0.045)
+	flavpt0.GetXaxis().SetTitleFont(42)
+	flavpt0.GetYaxis().SetTitleFont(42)
+	flavpt0.GetXaxis().SetTitle("Jet Parton Flavor")
+	flavpt0.GetYaxis().SetTitle("Number of Jets / Flavor")
+	flavpt0.GetYaxis().SetTitleOffset(1.1)
+
+	flavpt0.SetLineColor(kBlack)
+	flavpt5.SetLineColor(kMagenta)
+	flavpt10.SetLineColor(kBlue)
+	flavpt15.SetLineColor(kRed)
+
+	flavpt5.SetLineStyle(3)
+	flavpt10.SetLineStyle(6)
+	flavpt15.SetLineStyle(8)
+
+	flavpt0.SetLineWidth(2)
+	flavpt5.SetLineWidth(2)
+	flavpt10.SetLineWidth(2)
+	flavpt10.SetLineWidth(2)
+
+	flavpt0.Draw()
+	flavpt5.Draw("same")
+	flavpt10.Draw("same")
+	flavpt15.Draw("same")
+	l1.SetTextSize(0.045);
+	l1.DrawLatex(0.14,0.92, "CMS Simulation Preliminary      #sqrt{s} = 8 TeV")
+	if (counter != 2): #if not pythia 8
+		legend = TLegend(0.57,0.5,0.90,0.78)
+		legend.SetHeader(genDict[counter]+" t#kern[-1.0]{#bar{t}}, Varied Cuts On Light Parton pT")
+		legend.AddEntry(flavpt0,"Pruned GenParticles (no cut)","L")
+		legend.AddEntry(flavpt5,"Pruned GenParticles (pT > 5 GeV)","L")
+		legend.AddEntry(flavpt10,"Pruned GenParticles (pT > 10 GeV)","L")
+		legend.AddEntry(flavpt15,"Pruned GenParticles (pT > 15 GeV)","L")
+		legend.SetBorderSize(0)
+		legend.SetFillColor(kWhite)
+		legend.Draw()
+		c.SaveAs(fileDict[counter]+"ptcomparison.png")
+		c.Clear()
+	else: #if pythia 8, need to move legend over in x to not overlap!
+		legend = TLegend(0.69,0.45,0.94,0.83)
+		legend.SetHeader(genDict[counter]+" t#kern[-1.0]{#bar{t}}, Varied Cuts On Light Parton pT")
+		legend.AddEntry(flavpt0,"Pruned GenParticles (no cut)","L")
+		legend.AddEntry(flavpt5,"Pruned GenParticles (pT > 5 GeV)","L")
+		legend.AddEntry(flavpt10,"Pruned GenParticles (pT > 10 GeV)","L")
+		legend.AddEntry(flavpt15,"Pruned GenParticles (pT > 15 GeV)","L")
+		legend.SetBorderSize(0)
+		legend.SetFillColor(kWhite)
+		legend.Draw()
+		c.SaveAs(fileDict[counter]+"ptcomparison.png")
+		c.Clear()

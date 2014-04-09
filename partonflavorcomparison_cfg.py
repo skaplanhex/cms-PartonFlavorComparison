@@ -31,8 +31,8 @@ process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
       # 'file:tt_herwig6_herwigstatus_events.root',
-      # 'file:tt_herwig6_pythiastatus_events.root',
-       'file:tt_pythia6_events.root',
+       'file:tt_herwig6_pythiastatus_events.root',
+      # 'file:tt_pythia8_events.root',
       # 'file:tt_pythia8_events.root'
        #  '/store/mc/Summer12_DR53X/TTJets_SemiLeptMGDecays_8TeV-madgraph/AODSIM/PU_S10_START53_V7A_ext-v1/00000/00188A34-1224-E211-833B-003048D4612C.root',
        # '/store/mc/Summer12_DR53X/TTJets_SemiLeptMGDecays_8TeV-madgraph/AODSIM/PU_S10_START53_V7A_ext-v1/00000/0031649A-1324-E211-AEB0-0025B3E06484.root',
