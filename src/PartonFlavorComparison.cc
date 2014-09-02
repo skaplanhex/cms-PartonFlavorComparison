@@ -97,10 +97,9 @@ class PartonFlavorComparison : public edm::EDAnalyzer {
 
       // ----------member data ---------------------------
       edm::Service<TFileService> fs;
-      edm::InputTag bHadrons_,cHadrons_,partons_,leptons_,jets_,flavorByDR_,flavorByClustering_;
+      edm::InputTag bHadrons_,cHadrons_,partons_,leptons_,jets_,flavorByClustering_;
       edm::Handle< reco::GenParticleRefVector > bHadrons,cHadrons,partons,leptons;
       edm::Handle< edm::View< reco::Jet > > jets;
-      edm::Handle< reco::JetMatchedPartonsCollection > flavorByDR;
       edm::Handle< reco::JetFlavourInfoMatchingCollection > flavorByClustering;
 
       //plots
@@ -139,6 +138,8 @@ class PartonFlavorComparison : public edm::EDAnalyzer {
       TH2D* hJetPt_LightQuarkPt;
       TH2D* hJetPt_GluonPt;
 
+      bool useLeptons;
+
       ofstream events;
 
 };
@@ -161,9 +162,9 @@ PartonFlavorComparison::PartonFlavorComparison(const edm::ParameterSet& iConfig)
   bHadrons_ = iConfig.getParameter<InputTag>("bHadrons");
   cHadrons_ = iConfig.getParameter<InputTag>("cHadrons");
   partons_ = iConfig.getParameter<InputTag>("partons");
-  leptons_ = iConfig.getParameter<InputTag>("leptons");
+  useLeptons = iConfig.exists("leptons");
+  if (useLeptons) leptons_ = iConfig.getParameter<InputTag>("leptons");
   jets_ = iConfig.getParameter<InputTag>("jets");
-  flavorByDR_ = iConfig.getParameter<InputTag>("jetFlavourByRef");
   flavorByClustering_ = iConfig.getParameter<InputTag>("jetFlavourInfos");
 
   //events.open("events.txt");
@@ -228,16 +229,15 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
     iEvent.getByLabel(bHadrons_,bHadrons);
     iEvent.getByLabel(cHadrons_,cHadrons);
     iEvent.getByLabel(partons_,partons);
-    iEvent.getByLabel(leptons_,leptons);
+    if(useLeptons) iEvent.getByLabel(leptons_,leptons);
     iEvent.getByLabel(jets_, jets);
-    iEvent.getByLabel(flavorByDR_,flavorByDR);
     iEvent.getByLabel(flavorByClustering_, flavorByClustering );
 
     //fill histograms with the number of ghost b hadrons, c hadrons, partons, and leptons in each event
     hNumBHadrons->Fill( bHadrons->size() );
     hNumCHadrons->Fill( cHadrons->size() );
     hNumPartons->Fill( partons->size() );
-    hNumLeptons->Fill( leptons->size() );
+    if(useLeptons) hNumLeptons->Fill( leptons->size() );
 
     //find the two hardest b hadrons
     reco::GenParticleRef hardestBHadron;
@@ -310,16 +310,8 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
       hJetPt_BHadronPt_HighPt->Fill(secondHardestBJetBHadrons.at(0)->pt(),secondHardestBJetPt);
 
     for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
-      
-      int currentIndex = iMatch - flavorByClustering->begin();
-      //check to see if jets between collections match
-      if( edm::Ptr<reco::Candidate>((*iMatch).first.id(), (*iMatch).first.get(), (*iMatch).first.key())  != 
-        edm::Ptr<reco::Candidate>((*flavorByDR)[currentIndex].first.id(), (*flavorByDR)[currentIndex].first.get(), (*flavorByDR)[currentIndex].first.key()) ) continue;
 
       const reco::Jet* iJet  = (*iMatch).first.get();
-      int oldPartonFlavor = 0;
-      const reco::GenParticleRef partonRef = (*flavorByDR)[currentIndex].second.algoDefinitionParton();
-      if ( partonRef.isNonnull() ) oldPartonFlavor = partonRef.get()->pdgId();
       int newPartonFlavor = abs((*iMatch).second.getPartonFlavour());
       // if (newPartonFlavor != 5) continue;
 
@@ -341,13 +333,10 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
       hPartonFlavorNew->Fill( partonFlavourToChar(newPartonFlavor), 1 );
 
-      hPartonFlavorOld_Phi->Fill( jetPhi, partonFlavourToChar(oldPartonFlavor), 1 );
       hPartonFlavorNew_Phi->Fill( jetPhi, partonFlavourToChar(newPartonFlavor), 1 );
 
-      hPartonFlavorOld_Eta->Fill( jetEta, partonFlavourToChar(oldPartonFlavor), 1 );
       hPartonFlavorNew_Eta->Fill( jetEta, partonFlavourToChar(newPartonFlavor), 1 );
 
-      hPartonFlavorOld_Pt->Fill( jetPt, partonFlavourToChar(oldPartonFlavor), 1 );
       hPartonFlavorNew_Pt->Fill( jetPt, partonFlavourToChar(newPartonFlavor), 1 );
 
 
