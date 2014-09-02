@@ -397,11 +397,8 @@ PartonFlavorComparison::endJob()
 {
   hPartonFlavorNew->LabelsOption("a","X");
   hPartonFlavorNew_Pt->LabelsOption("a","Y");
-  hPartonFlavorOld_Pt->LabelsOption("a","Y");
   hPartonFlavorNew_Eta->LabelsOption("a","Y");
-  hPartonFlavorOld_Eta->LabelsOption("a","Y");
   hPartonFlavorNew_Phi->LabelsOption("a","Y");
-  hPartonFlavorOld_Phi->LabelsOption("a","Y");
 
 }
 
