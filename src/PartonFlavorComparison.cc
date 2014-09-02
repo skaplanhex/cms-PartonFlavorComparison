@@ -94,6 +94,7 @@ class PartonFlavorComparison : public edm::EDAnalyzer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual const char* partonFlavourToChar(int);
+      virtual const char* hadronFlavourToChar(int);
 
       // ----------member data ---------------------------
       edm::Service<TFileService> fs;
@@ -137,6 +138,8 @@ class PartonFlavorComparison : public edm::EDAnalyzer {
 
       TH2D* hJetPt_LightQuarkPt;
       TH2D* hJetPt_GluonPt;
+
+      TH2D* hPartonFlavor_HadronFlavor;
 
       bool useLeptons;
 
@@ -214,6 +217,15 @@ PartonFlavorComparison::partonFlavourToChar(int temp)
         throw cms::Exception("PDGID Issue") << "PDGID Not recognized, investigate!";
     }
 }
+const char*
+PartonFlavorComparison::hadronFlavourToChar(int temp)
+{
+  int flav = abs(temp);
+  if      (flav == 4) return "c";
+  else if (flav == 5) return "b";
+  else if (flav == 0) return "light";
+  else throw cms::Exception("PDGID Issue") << "PDGID Not recognized, investigate!";
+}
 // ------------ method called for each event  ------------
 void
 PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -266,12 +278,12 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
     double secondHardestBJetPt = -1.;
     for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
       const reco::Jet* iJet  = (*iMatch).first.get();
-      int newPartonFlavor = abs((*iMatch).second.getPartonFlavour());
-      if (newPartonFlavor == 1 || newPartonFlavor == 2 || newPartonFlavor == 3)
+      int partonFlavor = abs((*iMatch).second.getPartonFlavour());
+      if (partonFlavor == 1 || partonFlavor == 2 || partonFlavor == 3)
         hJetPt_LightQuarkPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
-      else if (newPartonFlavor == 21)
+      else if (partonFlavor == 21)
         hJetPt_GluonPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
-      if (newPartonFlavor != 5) continue;
+      if (partonFlavor != 5) continue;
       double jetPt = iJet->pt();
       if ( jetPt > hardestBJetPt ){
         hardestBJet = const_cast<reco::Jet*>(iJet);
@@ -287,7 +299,7 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
     }//end loop over jet matches to get two hardest b jets and to fill histograms for jet pt/parton pt comparison
     //plots including just two hardest b jets
     if (!hardestBJet){
-      cout << "no b jets!" << endl;
+      //cout << "no b jets!" << endl;
       return; //just move on to the next event
     }
     if (!secondHardestBJet){
@@ -312,8 +324,9 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
     for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
 
       const reco::Jet* iJet  = (*iMatch).first.get();
-      int newPartonFlavor = abs((*iMatch).second.getPartonFlavour());
-      // if (newPartonFlavor != 5) continue;
+      int partonFlavor = abs((*iMatch).second.getPartonFlavour());
+      int hadronFlavor = abs((*iMatch).second.getHadronFlavour());
+      // if (partonFlavor != 5) continue;
 
       double jetPt = iJet->pt();
       double jetEta = iJet->eta();
@@ -323,7 +336,7 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
       hJetEta->Fill(jetEta);
       hJetPt->Fill(jetPt);
 
-      if(jetPt < 30 && newPartonFlavor == 5){
+      if(jetPt < 30 && partonFlavor == 5){
         hSoftJetsPhi->Fill(jetPhi);
         hSoftJetsEta->Fill(jetEta);
         hJetPt_BHadronPt_LowPt->Fill((*iMatch).second.getbHadrons().at(0)->pt(),jetPt);
@@ -331,13 +344,14 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
       if ( jetPt < 20 ) continue;
 
-      hPartonFlavorNew->Fill( partonFlavourToChar(newPartonFlavor), 1 );
-
-      hPartonFlavorNew_Phi->Fill( jetPhi, partonFlavourToChar(newPartonFlavor), 1 );
-
-      hPartonFlavorNew_Eta->Fill( jetEta, partonFlavourToChar(newPartonFlavor), 1 );
-
-      hPartonFlavorNew_Pt->Fill( jetPt, partonFlavourToChar(newPartonFlavor), 1 );
+      hPartonFlavorNew->Fill( partonFlavourToChar(partonFlavor), 1 );
+      hPartonFlavorNew_Phi->Fill( jetPhi, partonFlavourToChar(partonFlavor), 1 );
+      hPartonFlavorNew_Eta->Fill( jetEta, partonFlavourToChar(partonFlavor), 1 );
+      hPartonFlavorNew_Pt->Fill( jetPt, partonFlavourToChar(partonFlavor), 1 );
+      char* f = const_cast<char*>( partonFlavourToChar(partonFlavor) );
+      //yes the line below is ugly, but it was a quick way to get the job done
+      if (partonFlavor == 1 || partonFlavor == 2 || partonFlavor == 3 || partonFlavor == 21) f = const_cast<char*>( hadronFlavourToChar(0) );
+      hPartonFlavor_HadronFlavor->Fill( hadronFlavourToChar(hadronFlavor), f, 1);
 
 
     } //end loop over new jet matches
@@ -387,6 +401,7 @@ PartonFlavorComparison::beginJob()
 
   hJetPt_LightQuarkPt = fs->make<TH2D>("hJetPt_LightQuarkPt", "Jet pT vs. Light Quark pT",500,0,500,500,0,500);
   hJetPt_GluonPt = fs->make<TH2D>("hJetPt_GluonPt", "Jet pT vs. Gluon pT",500,0,500,500,0,500);
+  hPartonFlavor_HadronFlavor = fs->make<TH2D>("hPartonFlavor_HadronFlavor","Parton and Hadron Flavor Comparison",3,0,3,4,0,4);
 
 
 }
@@ -399,6 +414,9 @@ PartonFlavorComparison::endJob()
   hPartonFlavorNew_Pt->LabelsOption("a","Y");
   hPartonFlavorNew_Eta->LabelsOption("a","Y");
   hPartonFlavorNew_Phi->LabelsOption("a","Y");
+
+  hPartonFlavor_HadronFlavor->LabelsOption("a","X");
+  hPartonFlavor_HadronFlavor->LabelsOption("a","Y");
 
 }
 
