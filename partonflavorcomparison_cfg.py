@@ -54,17 +54,17 @@ process.source = cms.Source("PoolSource",
 
        # /GluGluToHToBB_M-125_8TeV-powheg-pythia8/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
 
-       # '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/B23C2E63-4FA1-E211-BC07-003048679228.root',
-       # '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/B4B64DF3-4BA1-E211-9CCB-0026189438FD.root',
-       # '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/BA86FB89-4AA1-E211-A55C-003048678B34.root',
-       # '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/C85DC6B2-49A1-E211-8F8D-002354EF3BE6.root',
-       # '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/CCB0A5A6-47A1-E211-9936-00248C0BE014.root',
-       # '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/D4BD03FB-43A1-E211-8997-00248C0BE018.root',
+       '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/B23C2E63-4FA1-E211-BC07-003048679228.root',
+       '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/B4B64DF3-4BA1-E211-9CCB-0026189438FD.root',
+       '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/BA86FB89-4AA1-E211-A55C-003048678B34.root',
+       '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/C85DC6B2-49A1-E211-8F8D-002354EF3BE6.root',
+       '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/CCB0A5A6-47A1-E211-9936-00248C0BE014.root',
+       '/store/mc/Summer12_DR53X/GluGluToHToBB_M-125_8TeV-powheg-pythia8/AODSIM/PU_S10_START53_V7C-v1/10000/D4BD03FB-43A1-E211-8997-00248C0BE018.root',
 
        # /TT_CT10_AUET2_8TeV-powheg-herwig/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM
-       '/store/mc/Summer12_DR53X/TT_CT10_AUET2_8TeV-powheg-herwig/AODSIM/PU_S10_START53_V19-v1/10000/08183209-09CB-E211-AB1E-003048FFD79C.root',
-       '/store/mc/Summer12_DR53X/TT_CT10_AUET2_8TeV-powheg-herwig/AODSIM/PU_S10_START53_V19-v1/10000/081ADBBC-F0CA-E211-A893-002618943962.root',
-       '/store/mc/Summer12_DR53X/TT_CT10_AUET2_8TeV-powheg-herwig/AODSIM/PU_S10_START53_V19-v1/10000/08372094-D0CA-E211-BBAA-0025905938D4.root',
+       # '/store/mc/Summer12_DR53X/TT_CT10_AUET2_8TeV-powheg-herwig/AODSIM/PU_S10_START53_V19-v1/10000/08183209-09CB-E211-AB1E-003048FFD79C.root',
+       # '/store/mc/Summer12_DR53X/TT_CT10_AUET2_8TeV-powheg-herwig/AODSIM/PU_S10_START53_V19-v1/10000/081ADBBC-F0CA-E211-A893-002618943962.root',
+       # '/store/mc/Summer12_DR53X/TT_CT10_AUET2_8TeV-powheg-herwig/AODSIM/PU_S10_START53_V19-v1/10000/08372094-D0CA-E211-BBAA-0025905938D4.root',
     )
 )
 
@@ -85,7 +85,7 @@ process.jetFlavourInfosAK5 = cms.EDProducer("JetFlavourClustering",
       jetAlgorithm             = cms.string("AntiKt"),
       rParam                   = cms.double(0.5),
       ghostRescaling           = cms.double(1e-18),
-      hadronFlavourHasPriority = cms.bool(True)
+      hadronFlavourHasPriority = cms.bool(False)
 )
 process.jetFlavourInfosKT6 = cms.EDProducer("JetFlavourClustering",
       jets                     = cms.InputTag("kt6PFJets"),
@@ -95,7 +95,7 @@ process.jetFlavourInfosKT6 = cms.EDProducer("JetFlavourClustering",
       jetAlgorithm             = cms.string("Kt"),
       rParam                   = cms.double(0.6),
       ghostRescaling           = cms.double(1e-18),
-      hadronFlavourHasPriority = cms.bool(True)
+      hadronFlavourHasPriority = cms.bool(False)
 )
 process.jetFlavourInfosKT6Leptons = cms.EDProducer("JetFlavourClustering",
       jets                     = cms.InputTag("kt6PFJets"),
@@ -106,7 +106,7 @@ process.jetFlavourInfosKT6Leptons = cms.EDProducer("JetFlavourClustering",
       jetAlgorithm             = cms.string("Kt"),
       rParam                   = cms.double(0.6),
       ghostRescaling           = cms.double(1e-18),
-      hadronFlavourHasPriority = cms.bool(True)
+      hadronFlavourHasPriority = cms.bool(False)
 )
 process.jetFlavourInfosCA4 = cms.EDProducer("JetFlavourClustering",
       jets                     = cms.InputTag("ca4PFJets"),
@@ -116,7 +116,7 @@ process.jetFlavourInfosCA4 = cms.EDProducer("JetFlavourClustering",
       jetAlgorithm             = cms.string("CambridgeAachen"),
       rParam                   = cms.double(0.4),
       ghostRescaling           = cms.double(1e-18),
-      hadronFlavourHasPriority = cms.bool(True)
+      hadronFlavourHasPriority = cms.bool(False)
 )
 process.TFileService = cms.Service("TFileService",
       fileName = cms.string(options.outfilename)
