@@ -251,75 +251,75 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
     hNumPartons->Fill( partons->size() );
     if(useLeptons) hNumLeptons->Fill( leptons->size() );
 
-    //find the two hardest b hadrons
-    reco::GenParticleRef hardestBHadron;
-    reco::GenParticleRef secondHardestBHadron;
-    double hardestBPt = -1.;
-    double secondHardestBPt = -1.;
-    for (reco::GenParticleRefVector::const_iterator iHadron = bHadrons->begin(); iHadron != bHadrons->end(); ++iHadron){
-      double pt = (*iHadron)->pt();
-      if ( pt > hardestBPt ){
-        hardestBHadron = (*iHadron);
-        hardestBPt = pt;
-      }
-      else if ( (pt < hardestBPt) && (pt > secondHardestBPt) ){
-        secondHardestBHadron = (*iHadron);
-        secondHardestBPt = pt;
-      }
+    // //find the two hardest b hadrons
+    // reco::GenParticleRef hardestBHadron;
+    // reco::GenParticleRef secondHardestBHadron;
+    // double hardestBPt = -1.;
+    // double secondHardestBPt = -1.;
+    // for (reco::GenParticleRefVector::const_iterator iHadron = bHadrons->begin(); iHadron != bHadrons->end(); ++iHadron){
+    //   double pt = (*iHadron)->pt();
+    //   if ( pt > hardestBPt ){
+    //     hardestBHadron = (*iHadron);
+    //     hardestBPt = pt;
+    //   }
+    //   else if ( (pt < hardestBPt) && (pt > secondHardestBPt) ){
+    //     secondHardestBHadron = (*iHadron);
+    //     secondHardestBPt = pt;
+    //   }
 
-    }//end loop over genparticles
+    // }//end loop over genparticles
 
-    //find two hardest b jets
-    reco::Jet* hardestBJet = NULL;
-    reco::Jet* secondHardestBJet = NULL;
-    reco::GenParticleRefVector hardestBJetBHadrons;
-    reco::GenParticleRefVector secondHardestBJetBHadrons;
-    double hardestBJetPt = -1.;
-    double secondHardestBJetPt = -1.;
-    for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
-      const reco::Jet* iJet  = (*iMatch).first.get();
-      int partonFlavor = abs((*iMatch).second.getPartonFlavour());
-      if (partonFlavor == 1 || partonFlavor == 2 || partonFlavor == 3)
-        hJetPt_LightQuarkPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
-      else if (partonFlavor == 21)
-        hJetPt_GluonPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
-      if (partonFlavor != 5) continue;
-      double jetPt = iJet->pt();
-      if ( jetPt > hardestBJetPt ){
-        hardestBJet = const_cast<reco::Jet*>(iJet);
-        hardestBJetBHadrons = (*iMatch).second.getbHadrons();
-        hardestBJetPt = jetPt;
-      }
-      else if ( (jetPt < hardestBJetPt) && (jetPt > secondHardestBJetPt) ){
-        secondHardestBJet = const_cast<reco::Jet*>(iJet);
-        secondHardestBJetBHadrons = (*iMatch).second.getbHadrons();
-        secondHardestBJetPt = jetPt;
-      }
+    // //find two hardest b jets
+    // reco::Jet* hardestBJet = NULL;
+    // reco::Jet* secondHardestBJet = NULL;
+    // reco::GenParticleRefVector hardestBJetBHadrons;
+    // reco::GenParticleRefVector secondHardestBJetBHadrons;
+    // double hardestBJetPt = -1.;
+    // double secondHardestBJetPt = -1.;
+    // for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
+    //   const reco::Jet* iJet  = (*iMatch).first.get();
+    //   int partonFlavor = abs((*iMatch).second.getPartonFlavour());
+    //   if (partonFlavor == 1 || partonFlavor == 2 || partonFlavor == 3)
+    //     hJetPt_LightQuarkPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
+    //   else if (partonFlavor == 21)
+    //     hJetPt_GluonPt->Fill( (*iMatch).second.getPartons().at(0)->pt(), iJet->pt() );
+    //   if (partonFlavor != 5) continue;
+    //   double jetPt = iJet->pt();
+    //   if ( jetPt > hardestBJetPt ){
+    //     hardestBJet = const_cast<reco::Jet*>(iJet);
+    //     hardestBJetBHadrons = (*iMatch).second.getbHadrons();
+    //     hardestBJetPt = jetPt;
+    //   }
+    //   else if ( (jetPt < hardestBJetPt) && (jetPt > secondHardestBJetPt) ){
+    //     secondHardestBJet = const_cast<reco::Jet*>(iJet);
+    //     secondHardestBJetBHadrons = (*iMatch).second.getbHadrons();
+    //     secondHardestBJetPt = jetPt;
+    //   }
     
-    }//end loop over jet matches to get two hardest b jets and to fill histograms for jet pt/parton pt comparison
-    //plots including just two hardest b jets
-    if (!hardestBJet){
-      //cout << "no b jets!" << endl;
-      return; //just move on to the next event
-    }
-    if (!secondHardestBJet){
-      // events << eventAddress << "\n";
-      // cout << "only one b jet!" << endl;
-      // cout << eventAddress << endl;
-    }
-    hHardestBJetPhi->Fill( hardestBJet->phi() );
-    hHardestBJetEta->Fill( hardestBJet->eta() );
-    hHardestBJetPt->Fill( hardestBJetPt );
-    if(secondHardestBJet){
-      hSecondHardestBJetPhi->Fill( secondHardestBJet->phi() );
-      hSecondHardestBJetEta->Fill( secondHardestBJet->eta() );
-      hSecondHardestBJetPt->Fill( secondHardestBJetPt );
-    }
-    //compare jet pT to bhadron pT
-    //if(hardestBJetBHadrons.size() == 0 || secondHardestBJetBHadrons.size() == 0) throw cms::Exception("b jet issue") << "one of the two b jets don't have clustered b hadrons!!!";
-    hJetPt_BHadronPt_HighPt->Fill(hardestBJetBHadrons.at(0)->pt(),hardestBJetPt);
-    if(secondHardestBJet)
-      hJetPt_BHadronPt_HighPt->Fill(secondHardestBJetBHadrons.at(0)->pt(),secondHardestBJetPt);
+    // }//end loop over jet matches to get two hardest b jets and to fill histograms for jet pt/parton pt comparison
+    // //plots including just two hardest b jets
+    // if (!hardestBJet){
+    //   //cout << "no b jets!" << endl;
+    //   return; //just move on to the next event
+    // }
+    // if (!secondHardestBJet){
+    //   // events << eventAddress << "\n";
+    //   // cout << "only one b jet!" << endl;
+    //   // cout << eventAddress << endl;
+    // }
+    // hHardestBJetPhi->Fill( hardestBJet->phi() );
+    // hHardestBJetEta->Fill( hardestBJet->eta() );
+    // hHardestBJetPt->Fill( hardestBJetPt );
+    // if(secondHardestBJet){
+    //   hSecondHardestBJetPhi->Fill( secondHardestBJet->phi() );
+    //   hSecondHardestBJetEta->Fill( secondHardestBJet->eta() );
+    //   hSecondHardestBJetPt->Fill( secondHardestBJetPt );
+    // }
+    // //compare jet pT to bhadron pT
+    // //if(hardestBJetBHadrons.size() == 0 || secondHardestBJetBHadrons.size() == 0) throw cms::Exception("b jet issue") << "one of the two b jets don't have clustered b hadrons!!!";
+    // hJetPt_BHadronPt_HighPt->Fill(hardestBJetBHadrons.at(0)->pt(),hardestBJetPt);
+    // if(secondHardestBJet)
+    //   hJetPt_BHadronPt_HighPt->Fill(secondHardestBJetBHadrons.at(0)->pt(),secondHardestBJetPt);
 
     for (reco::JetFlavourInfoMatchingCollection::const_iterator iMatch = flavorByClustering->begin(); iMatch != flavorByClustering->end(); ++iMatch) {
 
@@ -336,11 +336,11 @@ PartonFlavorComparison::analyze(const edm::Event& iEvent, const edm::EventSetup&
       hJetEta->Fill(jetEta);
       hJetPt->Fill(jetPt);
 
-      if(jetPt < 30 && partonFlavor == 5){
-        hSoftJetsPhi->Fill(jetPhi);
-        hSoftJetsEta->Fill(jetEta);
-        hJetPt_BHadronPt_LowPt->Fill((*iMatch).second.getbHadrons().at(0)->pt(),jetPt);
-      }
+      // if(jetPt < 30 && partonFlavor == 5){
+      //   hSoftJetsPhi->Fill(jetPhi);
+      //   hSoftJetsEta->Fill(jetEta);
+      //   hJetPt_BHadronPt_LowPt->Fill((*iMatch).second.getbHadrons().at(0)->pt(),jetPt);
+      // }
 
       if ( jetPt < 20 ) continue;
 
@@ -456,3 +456,4 @@ PartonFlavorComparison::fillDescriptions(edm::ConfigurationDescriptions& descrip
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(PartonFlavorComparison);
+               
